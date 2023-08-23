@@ -13,8 +13,6 @@ np.random.seed(1000)
 
 
 ########## Classes and Methods #########################################
-
-
 class K_BanditParallel:
     """
     This class runs different instances of k-arm bandit in parallel.
