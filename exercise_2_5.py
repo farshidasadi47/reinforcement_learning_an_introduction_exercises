@@ -322,6 +322,52 @@ class CteEstimatorParallel(EstimatorParallel):
         self._Q = Q.reshape((-1, self._k))
 
 
+def plot_results(rewards, percents, names, file_name=None):
+    """
+    Plot and visualize the results of multi-armed bandit simulations.
+    ----------
+    Args:
+        rewards (List[numpy.ndarray]):
+            A list of arrays containing average rewards for different
+            simulations.
+        percents (List[numpy.ndarray]):
+            A list of arrays containing optimal action percentages for
+            different simulations.
+        names (List[str]):
+            A list of names or labels for each simulation.
+        file_name (str, optional):
+            The base name of the saved image files. If provided, two
+            separate images with "_a.png" and "_b.png" suffixes will be
+            saved using this base name.
+    """
+    colors = ["r", "b", "g", "c", "m", "k"]
+
+    # Plot average rewards
+    fig_a = plt.figure()
+    plt.gcf()
+    for i, (reward, name) in enumerate(zip(rewards, names)):
+        plt.plot(reward, c=colors[i], label=name)
+    plt.xlabel("Steps")
+    plt.ylabel("Average Rewards")
+    plt.legend()
+    # Plot optimal action percentages
+    fig_b = plt.figure()
+    plt.gcf()
+    for i, (percent, name) in enumerate(zip(percents, names)):
+        plt.plot(percent, c=colors[i], label=name)
+    plt.xlabel("Steps")
+    plt.ylabel(r"% relative to optimal")
+    plt.legend()
+    plt.show()
+    if file_name is not None:
+        fig_a.savefig(
+            file_name + "_a.pdf", bbox_inches="tight", pad_inches=0.1
+        )
+        fig_b.savefig(
+            file_name + "_b.pdf", bbox_inches="tight", pad_inches=0.1
+        )
+
+
 ########## test section ################################################
 def test_parallel():
     k = 10
@@ -329,7 +375,7 @@ def test_parallel():
     alpha = 0.1
     n_steps = 10000
     n_runs = 2000
-    file_name = None  # "exercise_2_5"#
+    file_name = "exercise_2_5"
     #
     avg_estimator = AvgEstimatorParallel(k, n_runs, eps)
     cte_estimator = CteEstimatorParallel(k, n_runs, eps, alpha)
@@ -341,6 +387,8 @@ def test_parallel():
         reward, percent = estimator.simulate(n_steps)
         rewards.append(reward)
         percents.append(percent)
+    # Plot results.
+    plot_results(rewards, percents, ["average", "constant"], file_name)
 
 
 ########## test section ################################################
