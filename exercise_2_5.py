@@ -270,19 +270,73 @@ class AvgEstimatorParallel(EstimatorParallel):
         self._Q = Q.reshape((-1, self._k))
 
 
+class CteEstimatorParallel(EstimatorParallel):
+    """
+    This class represents a multi-armed bandit agent using
+    epsilon-greedy action selection and sample averages reward
+    estimation.
+    ----------
+    Attributes:
+        _alpha (float):
+            Constant step size for updating action value estimations.
+        (Other attributes inherited from EstimatorParallel)
+    """
+
+    def __init__(
+        self, k=10, n_instances=2000, eps=0.1, alpha=0.1, Q0=None
+    ) -> None:
+        """
+        Initialize an AvgEstimatorParallel instance.
+        ----------
+        Args:
+            k (int, default=10):
+                See parent class for description.
+            n_instances (int, default=2000):
+                See parent class for description.
+            eps (float, default=0.0):
+                See parent class for description.
+            alpha (float, default=0.1):
+                Constant step size for updating action value
+                estimations.
+            Q0 (numpy.ndarray, default=None):
+                See parent class for description.
+        """
+        super().__init__(k, n_instances, eps, Q0)
+        self._alpha = alpha
+
+    def update_estimates(self, R, a):
+        """
+        Update the action value estimates using constant step size
+        reward estimation.
+        ----------
+        Args:
+            R (numpy.ndarray, float):
+                The array of received rewards for all instances.
+            a (numpy.ndarray, int):
+                An array of selected actions for all instances.
+        """
+        Q = self._Q.flatten()
+        Q[a + self._cte] = Q[a + self._cte] + self._alpha * (
+            R - Q[a + self._cte]
+        )
+        self._Q = Q.reshape((-1, self._k))
+
+
 ########## test section ################################################
 def test_parallel():
     k = 10
     eps = 0.1
+    alpha = 0.1
     n_steps = 10000
     n_runs = 2000
     file_name = None  # "exercise_2_5"#
     #
     avg_estimator = AvgEstimatorParallel(k, n_runs, eps)
+    cte_estimator = CteEstimatorParallel(k, n_runs, eps, alpha)
     #
     rewards = []
     percents = []
-    estimators = [avg_estimator]
+    estimators = [avg_estimator, cte_estimator]
     for estimator in tqdm(estimators, desc="Estimators"):
         reward, percent = estimator.simulate(n_steps)
         rewards.append(reward)
