@@ -22,11 +22,11 @@ class K_BanditParallel:
             The number of arms in the bandit problem.
         _n_instances (int):
             The number of bandit instances to run in parallel.
-        _cte (numpy.ndarray, int):
-            This arrays is used to facilitate indexing bandit instances.
         _q_star (numpy.ndarray, float):
             An array representing the true action values for all
             instances and arms.
+        _index (numpy.ndarray, int):
+            Auxiliary array used for numpy advanced indexing.
     """
 
     def __init__(self, k=10, n_instances=2000) -> None:
@@ -41,8 +41,8 @@ class K_BanditParallel:
         """
         self._k = k
         self._n_instances = n_instances
-        self._cte = np.arange(n_instances) * k
         self._q_star = np.random.rand(n_instances, k) * 1e-6
+        self._index = np.arange(n_instances)
 
     def play(self, a):
         """
@@ -58,7 +58,7 @@ class K_BanditParallel:
                 Array of rewards obtained from the chosen actions for
                 instances.
         """
-        return np.random.normal(self._q_star.flatten()[a + self._cte])
+        return np.random.normal(self._q_star[self._index, a])
 
     def optimal(self):
         """
@@ -90,13 +90,13 @@ class EstimatorParallel:
             The number of arms in the bandit problem.
         _n_instances (int):
             The number of runs to simulate in parallel.
-        _cte (numpy.ndarray, int):
-            This arrays is used to facilitate indexing bandit instances.
         _eps (float):
             The exploration parameter epsilon for epsilon-greedy action
             selection.
         _Q (numpy.ndarray, float):
             An array storing the estimated action values.
+        _index (numpy.ndarray, int):
+            Auxiliary array used for numpy advanced indexing.
         _bandit:
             An instance of K_ParalletBandit.
     """
@@ -119,12 +119,12 @@ class EstimatorParallel:
         """
         self._k = k
         self._n_instances = n_instances
-        self._cte = np.arange(n_instances) * k
         self._eps = eps
         if Q0 is None:
             self._Q = np.zeros((n_instances, k))
         else:
             self._Q = Q0
+        self._index = np.arange(n_instances)
         self._bandit = K_BanditParallel(k, n_instances)
 
     def select_exploit_action(self):
@@ -247,7 +247,7 @@ class AvgEstimatorParallel(EstimatorParallel):
             The same as its parent class.
         """
         super().__init__(k, n_runs, eps, Q0)
-        self._N = np.zeros(self._n_instances * self._k, dtype=int)
+        self._N = np.zeros((self._n_instances, self._k), dtype=int)
 
     def update_estimates(self, R, a):
         """
@@ -260,12 +260,12 @@ class AvgEstimatorParallel(EstimatorParallel):
             a (numpy.ndarray, int):
                 An array of selected actions for all instances.
         """
-        Q = self._Q.flatten()
-        self._N[a + self._cte] += 1
-        Q[a + self._cte] = (
-            Q[a + self._cte] + (R - Q[a + self._cte]) / self._N[a + self._cte]
+        Q = self._Q
+        self._N[self._index, a] += 1
+        Q[self._index, a] = (
+            Q[self._index, a]
+            + (R - Q[self._index, a]) / self._N[self._index, a]
         )
-        self._Q = Q.reshape((-1, self._k))
 
 
 class CteEstimatorParallel(EstimatorParallel):
@@ -313,11 +313,10 @@ class CteEstimatorParallel(EstimatorParallel):
             a (numpy.ndarray, int):
                 An array of selected actions for all instances.
         """
-        Q = self._Q.flatten()
-        Q[a + self._cte] = Q[a + self._cte] + self._alpha * (
-            R - Q[a + self._cte]
+        Q = self._Q
+        Q[self._index, a] = Q[self._index, a] + self._alpha * (
+            R - Q[self._index, a]
         )
-        self._Q = Q.reshape((-1, self._k))
 
 
 def plot_results(rewards, percents, names, file_name=None):
