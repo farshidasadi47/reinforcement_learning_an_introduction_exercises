@@ -1,5 +1,6 @@
 # Solutions to Reinforcement Learning: An Introduction
-This repository contains my solutions to the exercises from the second edition of the book. It is a work in progress, and additional chapters will be added gradually.
+This repository contains my solutions to the exercises from the second edition of the book. It is a work in progress, and additional chapters will be added gradually.  
+The repository is provided under GPL v3.0 license.
 ## Table of Contents
 ### Chapter 1
 [Solutions to exercises](https://github.com/farshidasadi47/reinforcement_learning_an_introduction_exercises/blob/master/Solutions_to_Reinforcement_Learning_Book.pdf?raw=true#page=2)
