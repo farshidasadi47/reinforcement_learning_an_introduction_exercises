@@ -123,7 +123,7 @@ class ValueIteration:
         plt.ylabel("Value estimates")
         plt.xlabel("Capital")
         if file_name is not None:
-            fig_value.savefig(file_name + f"_value_ph_{self.p_h}.png")
+            fig_value.savefig(file_name + f"_value_ph_{self.p_h}.pdf")
         #
         fig_policy = plt.figure()
         plt.stairs(self.pi[-1], s)
@@ -132,7 +132,7 @@ class ValueIteration:
         plt.ylabel("Final policy (stake)")
         plt.xlabel("Capital")
         if file_name is not None:
-            fig_policy.savefig(file_name + f"_action_ph_{self.p_h}.png")
+            fig_policy.savefig(file_name + f"_action_ph_{self.p_h}.pdf")
 
 
 def exercise_4_9():
